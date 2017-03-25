@@ -210,6 +210,68 @@ It looks at INSTALLED_APPS
 for each INSTALLED_APP it looks at the model
 it reviews it and sees if structure of data in code is in sync with db
 
+Django Database API
+____________________________
+
+python manage.py shell
+
+It runs Django Database API shell
+
+python manage.py shell
+>>> from music.models import Album, Song
+>>> Album.objects.all()
+[]
+>>> a = Album(artist="Taylor Swift", album_title="Red", genre="Country", album_logo="http://www.lyricsmode.com/i/bpictures/10381.png")
+>>> a
+<Album: Album object>
+>>> a.save()
+>>> Album.objects.all()
+[<Album: Album object>]
+>>> a.id
+1
+>>> b = Album()
+>>> b.artist = "Myth"
+>>> b.album_title = "High School"
+>>> b.genre = "Punk"
+>>> b.album_logo = "http://cdn.klimg.com/kapanlagi.com//p/taylor91112a.jpg"
+>>> b.save()
+>>> a.artist
+'Taylor Swift'
+>>> b.artist
+'Myth'
+>>> b.album_title = "Middle School"
+>>> b.save()
+>>> Album.objects.all()
+[<Album: Album object>, <Album: Album object>]
+
+[<Album: Album object>, <Album: Album object>]: is not really useful
+
+In models.py:
+
+# String representation
+    def __str__(self):
+        return self.album_title + ' - ' + self.artist
+
+Exit shell and restart
+
+>>> from music.models import Album, Song
+>>> Album.objects.all()
+[<Album: Red - Taylor Swift>, <Album: Middle School - Myth>]
+
+>>> Album.objects.filter(id=1)
+[<Album: Red - Taylor Swift>]
+
+>>> Album.objects.filter(artist__startswith="Tay")
+[<Album: Red - Taylor Swift>]
+
+
+
+
+
+
+
+
+
 
 
 
