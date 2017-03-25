@@ -58,6 +58,158 @@ from . import views
 
 . -> look in same directory
 
+url(r'^music/', include('music.urls'))
+
+Now ake a urls.py file in music/
+
+from django.conf.urls import url
+from . import views
+
+urlpatterns = [
+    url(r'^$', views.index, name='index')
+]
+
+
+r'^$': index of music app
+so route is /music/
+
+
+In music/views.py
+
+from django.http import HttpResponse
+
+def index(request):
+    return HttpResponse('<h1>Music App Home</h1>')
+
+Database Setup
+___________________
+
+Django came with default db db.sqlite3
+
+In /website/settings.py
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+]
+
+-- these are the default apps django came with
+
+Some of these apps need a db to work
+
+When we run our app
+
+python manage.py runserver
+
+You have unapplied migrations; your app may not work properly until they are applied.
+Run 'python manage.py migrate' to apply them.
+
+-- this means all our source code is not in sync with our db
+
+python manage.py migrate
+
+What happens here is it goes in settings.py to INSTALLED_APPS section
+for each app it goes into that app directory and looks for what tables are needed to work with that app
+
+Creating Models
+__________________
+
+id is PRIMARY KEY. It is automatically created by Django
+
+
+from django.db import models
+
+# Create your models here.
+
+
+class Album(models.Model):
+    artist = models.CharField(max_length=250)
+    album_title = models.CharField(max_length=500)
+    genre = models.CharField(max_length=100)
+    album_logo = models.CharField(max_length=1000)
+
+
+# Song needs to be associated with an Album
+class Song(models.Model):
+    album = models.ForeignKey(Album, on_delete=models.CASCADE)
+    file_type = models.CharField(max_length=10)
+    song_title = models.CharField(max_length=250)
+
+
+
+
+on_delete=models.CASCADE: many songs may be part of an album
+But what happens when u delete the album??
+here any songs linked to deleted album also get deleted
+
+
+Now go to /website/settings.py
+
+INSTALLED_APPS = [
+    'music.apps.MusicConfig',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+]
+
+Add 'music.apps.MusicConfig' to INSTALLED_APPS
+
+python manage.py makemigrations music
+
+Migrations for 'music':
+  0001_initial.py:
+    - Create model Album
+    - Create model Song
+
+We made some changes to music model so we run this command
+
+Basically what happens here is it takes all the code in models(classes) and converts them to sql:
+
+E:\my_projects\learn-django\website>python manage.py sqlmigrate music 0001
+BEGIN;
+--
+-- Create model Album
+--
+CREATE TABLE "music_album" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "artist" varchar(250) NOT NULL, "album_title" varchar(500) NOT NULL, "genre" varchar(100) NOT NULL, "album_
+logo" varchar(1000) NOT NULL);
+--
+-- Create model Song
+--
+CREATE TABLE "music_song" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "file_type" varchar(10) NOT NULL, "song_title" varchar(250) NOT NULL, "album_id" integer NOT NULL REFERENCES
+ "music_album" ("id"));
+CREATE INDEX "music_song_95c3b9df" ON "music_song" ("album_id");
+
+COMMIT;
+
+So now we have this sql file
+
+Run it:
+
+python manage.py migrate
+
+Now db is in sync with our code
+
+Whenever we runserver it goes into /website/settings.py
+
+It looks at INSTALLED_APPS
+for each INSTALLED_APP it looks at the model
+it reviews it and sees if structure of data in code is in sync with db
+
 
 
 
